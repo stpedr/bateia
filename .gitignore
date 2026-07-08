@@ -1,0 +1,19 @@
+# Segredos — NUNCA commitar (regra de ouro do projeto)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Dependências e builds
+node_modules/
+dist/
+build/
+.next/
+.vercel/
+.netlify/
+
+# Sistema / editor
+.DS_Store
+Thumbs.db
+*.log
