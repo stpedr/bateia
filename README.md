@@ -16,15 +16,68 @@
 
 O detalhamento vive na skill [`ideia-app`](.claude/skills/ideia-app/SKILL.md) e no seu [`videos.json`](.claude/skills/ideia-app/videos.json) (playbook extraído de transcrições reais).
 
-## Como usar
+## Como usar (passo a passo)
 
-Abra esta pasta com o Claude Code e rode:
+```bash
+# 1. Clone e entre na pasta
+git clone https://github.com/stpedr/bateia.git meu-app
+cd meu-app
+
+# 2. Abra o Claude Code aqui dentro
+claude
+```
 
 ```
-/ideia-app <sua ideia de app em 1-3 frases>
+# 3. Dentro do Claude Code, rode a skill orquestradora
+/ideia-app app que lembra idosos de tomar remédio e avisa a família se não tomarem
 ```
 
-Ele devolve o relatório completo: ideia em 1 frase, veredito de mercado, nota, MVP + prompt de construção, caminho de publicação, plano de receita e checklist de segurança.
+Ele devolve o relatório completo: ideia em 1 frase, veredito de mercado, nota (x/10), MVP + prompt de construção, caminho de publicação, plano de receita e checklist de segurança — terminando com **a única ação a fazer hoje**.
+
+```
+# 4. Aprovado o plano? Construa em blocos, dentro da mesma pasta
+> construa o bloco 1 do plano
+
+# 5. Antes de qualquer deploy (obrigatório)
+/security-review
+```
+
+> Dica: clone uma cópia **por app** (`meu-app-1`, `meu-app-2`…). O repo é o molde; cada app nasce de uma cópia dele.
+
+## Como funciona por trás (os basics)
+
+Não tem mágica — são só **3 mecanismos do Claude Code** que este repo explora:
+
+**1. `CLAUDE.md` = memória permanente do projeto.**
+Toda vez que você abre o Claude Code numa pasta, ele lê o `CLAUDE.md` dela antes de qualquer coisa. É assim que as convenções (MVP de 3 telas, Vercel/Supabase, Pix, "nunca deployar sem security-review") valem em *toda* sessão sem você repetir nada. Mudou de opinião sobre uma convenção? Edite o `CLAUDE.md` e pronto.
+
+**2. `.claude/skills/*/SKILL.md` = comandos ensináveis.**
+Cada subpasta de `.claude/skills/` com um `SKILL.md` vira automaticamente um slash command (`/ideia-app`, `/blueprint`…). O arquivo é só Markdown com um cabeçalho:
+
+```markdown
+---
+name: ideia-app
+description: quando usar esta skill (o Claude lê isso para decidir ativá-la sozinho)
+---
+Instruções que o Claude segue quando a skill roda.
+O que você digitar depois do comando entra em $ARGUMENTS.
+```
+
+Ou seja: **uma skill é um prompt versionado no git**. Dá para editar, commitar, compartilhar — e uma skill pode mandar o Claude invocar outra (a `ideia-app` chama `market-research` na validação e `security-review` na blindagem). É por isso que copiar a pasta de uma skill de outro repo (como fizemos com o ECC) basta para "instalá-la".
+
+**3. Arquivos de dados ao lado da skill = conhecimento consultável.**
+O `videos.json` fica junto do `SKILL.md` e guarda o playbook extraído dos vídeos (ferramentas, preços, critérios). A skill manda o Claude lê-lo quando precisa dos detalhes. Quer evoluir o método? Edite o JSON — a skill nem precisa mudar.
+
+O ciclo completo, portanto:
+
+```
+você digita /ideia-app <ideia>
+   └─ Claude lê SKILL.md (o roteiro) + videos.json (o conhecimento)
+        ├─ Etapa 2 → invoca market-research (skill ECC)
+        ├─ Etapa 4 → invoca blueprint (skill ECC)
+        └─ Etapa 7 → invoca security-review (skill ECC)
+   └─ sai o relatório com o plano do app
+```
 
 ## Integração ECC — os 3 passos
 
